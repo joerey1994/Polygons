@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
 
 public class PlacePickerActivity extends AppCompatActivity {
@@ -38,7 +39,15 @@ public class PlacePickerActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(requestCode == PLACE_PICKER_REQUEST){
+            if(resultCode == RESULT_OK){
 
+                Place place = PlacePicker.getPlace(PlacePickerActivity.this, data);
+                tvPlace.setText(place.getAddress());
+
+            }
+
+        }
     }
 
 }

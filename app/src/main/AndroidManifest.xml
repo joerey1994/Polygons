@@ -20,7 +20,7 @@
             android:value="AIzaSyBee59R_P_20_TjkkyY3g2NiEhWnkhCWOI" />
 
         <activity
-            android:name=".PolyActivity"
+            android:name=".PlacePickerActivity"
             android:label="@string/title_activity_maps">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,7 +28,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".PlacePickerActivity"></activity>
+        <activity android:name=".PolyActivity"></activity>
     </application>
 
 </manifest>
