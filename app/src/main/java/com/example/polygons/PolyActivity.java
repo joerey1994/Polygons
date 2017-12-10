@@ -1,42 +1,53 @@
 package com.example.polygons;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CustomCap;
 import com.google.android.gms.maps.model.Dash;
 import com.google.android.gms.maps.model.Dot;
 import com.google.android.gms.maps.model.Gap;
 import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PatternItem;
-import com.google.android.gms.maps.model.Polygon;
-import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-
-import static com.example.polygons.R.id.map;
 
 
 /**
  * An activity that displays a Google map with polylines to represent paths or routes,
  * and polygons to represent areas.
  */
+
+
 public class PolyActivity extends AppCompatActivity
         implements
-                OnMapReadyCallback,
-                GoogleMap.OnPolylineClickListener,
-                GoogleMap.OnPolygonClickListener {
+        OnMapReadyCallback,
+        GoogleMap.OnPolylineClickListener {
+
+    private GoogleMap mMap;
+    LocationManager locationManager;
+    private TextView get_place;
 
     private static final int COLOR_BLACK_ARGB = 0xff000000;
     private static final int COLOR_WHITE_ARGB = 0xffffffff;
@@ -45,7 +56,7 @@ public class PolyActivity extends AppCompatActivity
     private static final int COLOR_ORANGE_ARGB = 0xffF57F17;
     private static final int COLOR_BLUE_ARGB = 0xffF9A825;
 
-    private static final int POLYLINE_STROKE_WIDTH_PX = 12;
+    private static final int POLYLINE_STROKE_WIDTH_PX = 20;
     private static final int POLYGON_STROKE_WIDTH_PX = 8;
     private static final int PATTERN_DASH_LENGTH_PX = 20;
     private static final int PATTERN_GAP_LENGTH_PX = 20;
@@ -67,13 +78,114 @@ public class PolyActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
+
         // Retrieve the content view that renders the map.
         setContentView(R.layout.activity_maps);
 
         // Get the SupportMapFragment and request notification when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(map);
+                .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        get_place = (TextView)findViewById(R.id.textView);
+        get_place.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+            }
+        });
+
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+        {
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1, 1, new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    //get the latitude
+                    double latitude = location.getLatitude();
+                    //get the logitude
+                    double longitude = location.getLongitude();
+                    //instantiate the class LatLng
+                    LatLng latLng = new LatLng(latitude, longitude);
+                    //instantiate Geocoder class
+                    Geocoder geocoder = new Geocoder(getApplicationContext());
+                    try {
+                        List<Address> addressList = geocoder.getFromLocation(latitude, longitude, 20);
+                        String str = addressList.get(0).getLocality();
+                        mMap.addMarker(new MarkerOptions().position(latLng).title(str));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onStatusChanged(String s, int i, Bundle bundle) {
+
+                }
+
+                @Override
+                public void onProviderEnabled(String s) {
+
+                }
+
+                @Override
+                public void onProviderDisabled(String s) {
+
+                }
+            });
+        }
+        else if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+        {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 1, new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    //get the latitude
+                    double latitude = location.getLatitude();
+                    //get the logitude
+                    double longitude = location.getLongitude();
+                    //instantiate the class LatLng
+                    LatLng latLng = new LatLng(latitude, longitude);
+                    //instantiate Geocoder class
+                    Geocoder geocoder = new Geocoder(getApplicationContext());
+                    try {
+                        List<Address> addressList = geocoder.getFromLocation(latitude, longitude, 20);
+                        String str = addressList.get(0).getLocality();
+                        mMap.addMarker(new MarkerOptions().position(latLng).title(str));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onStatusChanged(String s, int i, Bundle bundle) {
+
+                }
+
+                @Override
+                public void onProviderEnabled(String s) {
+
+                }
+
+                @Override
+                public void onProviderDisabled(String s) {
+
+                }
+            });
+        }
+
     }
 
     /**
@@ -82,8 +194,11 @@ public class PolyActivity extends AppCompatActivity
      * This is where we can add markers or lines, add listeners or move the camera.
      * In this tutorial, we add polylines and polygons to represent routes and areas on the map.
      */
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
+
+        mMap = googleMap;
 
         // Add polylines to the map.
         // Polylines are useful to show a route or some other connection between points.
@@ -95,7 +210,9 @@ public class PolyActivity extends AppCompatActivity
                         new LatLng(26.307171, -98.172513),
                         new LatLng(26.307296, -98.170727)));
         // Store a data object with the polyline, used here to indicate an arbitrary type.
-        polyline1.setTag("A");
+        polyline1.setWidth(20);
+        polyline1.setColor(COLOR_ORANGE_ARGB);
+        polyline1.setTag("Vaquero Trail");
         // Style the polyline.
         stylePolyline(polyline1);
 
@@ -103,10 +220,193 @@ public class PolyActivity extends AppCompatActivity
                 .clickable(true)
                 .add(
                         new LatLng(26.307171, -98.172513),
-                        new LatLng(26.307037, -98.176113)));
+                        new LatLng(26.307037, -98.176113),
+                        new LatLng(26.307011, -98.176773),
+                        new LatLng(26.304897, -98.176660)));
 
-        polyline2.setTag("A");
+        polyline2.setWidth(20);
+        polyline2.setColor(COLOR_ORANGE_ARGB);
+        polyline2.setTag("Vaquero Trail");
         stylePolyline(polyline2);
+
+        Polyline polyline3 = googleMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .add(
+                        new LatLng(26.307037, -98.176113),
+                        new LatLng(26.308582, -98.176129)));
+
+        polyline3.setWidth(20);
+        polyline3.setColor(COLOR_ORANGE_ARGB);
+        polyline3.setTag("Vaquero Trail");
+        stylePolyline(polyline3);
+
+        Polyline polyline4 = googleMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .add(
+                        new LatLng(26.306031, -98.172438),
+                        new LatLng(26.305075, -98.172349),
+                        new LatLng(26.304897, -98.176660)));
+
+        polyline4.setWidth(20);
+        polyline4.setColor(COLOR_ORANGE_ARGB);
+        polyline4.setTag("Vaquero Trail");
+        stylePolyline(polyline4);
+
+        Polyline polyline5 = googleMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .add(
+                        new LatLng(26.305037, -98.173432),
+                        new LatLng(26.304085, -98.173605)));
+
+        polyline5.setWidth(20);
+        polyline5.setColor(COLOR_ORANGE_ARGB);
+        polyline5.setTag("Vaquero Trail");
+        stylePolyline(polyline5);
+
+        Polyline polyline6 = googleMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .add(
+                        new LatLng(26.307264, -98.171041),
+                        new LatLng(26.305678, -98.170941),
+                        new LatLng(26.305647, -98.171905)));
+
+        polyline6.setWidth(10);
+        polyline6.setColor(COLOR_GREEN_ARGB);
+        polyline6.setTag("Sidewalk");
+        stylePolyline(polyline6);
+
+        Polyline polyline7 = googleMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .add(
+                        new LatLng(26.305678, -98.170941),
+                        new LatLng(26.305445, -98.170961),
+                        new LatLng(26.305458, -98.171529)));
+
+        polyline7.setWidth(10);
+        polyline7.setColor(COLOR_GREEN_ARGB);
+        polyline7.setTag("Sidewalk");
+        stylePolyline(polyline7);
+
+        Polyline polyline8 = googleMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .add(
+                        new LatLng(26.306031, -98.172438),
+                        new LatLng(26.305961, -98.172993),
+                        new LatLng(26.306197, -98.173055)));
+
+        polyline8.setWidth(10);
+        polyline8.setColor(COLOR_GREEN_ARGB);
+        polyline8.setTag("Sidewalk");
+        stylePolyline(polyline8);
+
+        Polyline polyline9 = googleMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .add(
+                        new LatLng(26.305961, -98.172993),
+                        new LatLng(26.305682, -98.173311),
+                        new LatLng(26.305986, -98.173978),
+                        new LatLng(26.305640, -98.174161)));
+
+        polyline9.setWidth(10);
+        polyline9.setColor(COLOR_GREEN_ARGB);
+        polyline9.setTag("Sidewalk");
+        stylePolyline(polyline9);
+
+        Polyline polyline10 = googleMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .add(
+                        new LatLng(26.305837, -98.173629),
+                        new LatLng(26.305943, -98.173575),
+                        new LatLng(26.306131, -98.173999),
+                        new LatLng(26.306588, -98.173731)));
+
+        polyline10.setWidth(10);
+        polyline10.setColor(COLOR_GREEN_ARGB);
+        polyline10.setTag("Sidewalk");
+        stylePolyline(polyline10);
+
+        Polyline polyline11 = googleMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .add(
+                        new LatLng(26.306256, -98.173924),
+                        new LatLng(26.306554, -98.174643),
+                        new LatLng(26.307049, -98.174375)));
+
+        polyline11.setWidth(10);
+        polyline11.setColor(COLOR_GREEN_ARGB);
+        polyline11.setTag("Sidewalk");
+        stylePolyline(polyline11);
+
+        Polyline polyline12 = googleMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .add(
+                        new LatLng(26.306554, -98.174643),
+                        new LatLng(26.306838, -98.175303),
+                        new LatLng(26.307016, -98.175448)));
+
+        polyline12.setWidth(10);
+        polyline12.setColor(COLOR_GREEN_ARGB);
+        polyline12.setTag("Sidewalk");
+        stylePolyline(polyline12);
+
+        Polyline polyline13 = googleMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .add(
+                        new LatLng(26.307016, -98.175448),
+                        new LatLng(26.306795, -98.175614),
+                        new LatLng(26.305852, -98.175555),
+                        new LatLng(26.305900, -98.174632),
+                        new LatLng(26.305689, -98.174144)));
+
+        polyline13.setWidth(10);
+        polyline13.setColor(COLOR_GREEN_ARGB);
+        polyline13.setTag("Sidewalk");
+        stylePolyline(polyline13);
+
+        Polyline polyline14 = googleMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .add(
+                        new LatLng(26.306838, -98.175303),
+                        new LatLng(26.305881, -98.175201)));
+
+        polyline14.setWidth(10);
+        polyline14.setColor(COLOR_GREEN_ARGB);
+        polyline14.setTag("Sidewalk");
+        stylePolyline(polyline14);
+
+        Polyline polyline15 = googleMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .add(
+                        new LatLng(26.305852, -98.175555),
+                        new LatLng(26.304981, -98.175506)));
+
+        polyline15.setWidth(10);
+        polyline15.setColor(COLOR_GREEN_ARGB);
+        polyline15.setTag("Sidewalk");
+        stylePolyline(polyline15);
+
+        Polyline polyline16 = googleMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .add(
+                        new LatLng(26.305852, -98.175555),
+                        new LatLng(26.305796, -98.176658)));
+
+        polyline16.setWidth(10);
+        polyline16.setColor(COLOR_GREEN_ARGB);
+        polyline16.setTag("Sidewalk");
+        stylePolyline(polyline16);
+
+        Polyline polyline17 = googleMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .add(
+                        new LatLng(26.306795, -98.175614),
+                        new LatLng(26.306753, -98.176696)));
+
+        polyline17.setWidth(10);
+        polyline17.setColor(COLOR_GREEN_ARGB);
+        polyline17.setTag("Sidewalk");
+        stylePolyline(polyline17);
+
 
         // Add polygons to indicate areas on the map.
         /*Polygon polygon1 = googleMap.addPolygon(new PolygonOptions()
@@ -137,7 +437,7 @@ public class PolyActivity extends AppCompatActivity
 
         // Set listeners for click events.
         googleMap.setOnPolylineClickListener(this);
-        googleMap.setOnPolygonClickListener(this);
+        //googleMap.setOnPolygonClickListener(this);
     }
 
     /**
@@ -162,10 +462,10 @@ public class PolyActivity extends AppCompatActivity
                 polyline.setStartCap(new RoundCap());
                 break;
         }
-
+        polyline.setStartCap(new RoundCap());
         polyline.setEndCap(new RoundCap());
-        polyline.setWidth(POLYLINE_STROKE_WIDTH_PX);
-        polyline.setColor(COLOR_ORANGE_ARGB);
+        //polyline.setWidth(POLYLINE_STROKE_WIDTH_PX);
+        //polyline.setColor(COLOR_ORANGE_ARGB);
         polyline.setJointType(JointType.ROUND);
     }
 
@@ -173,7 +473,7 @@ public class PolyActivity extends AppCompatActivity
      * Styles the polygon, based on type.
      * @param polygon The polygon object that needs styling.
      */
-    private void stylePolygon(Polygon polygon) {
+    /*private void stylePolygon(Polygon polygon) {
         String type = "";
         // Get the data object stored with the polygon.
         if (polygon.getTag() != null) {
@@ -204,7 +504,7 @@ public class PolyActivity extends AppCompatActivity
         polygon.setStrokeWidth(POLYGON_STROKE_WIDTH_PX);
         polygon.setStrokeColor(strokeColor);
         polygon.setFillColor(fillColor);
-    }
+    }*/
 
     /**
      * Listens for clicks on a polyline.
@@ -213,14 +513,14 @@ public class PolyActivity extends AppCompatActivity
     @Override
     public void onPolylineClick(Polyline polyline) {
         // Flip from solid stroke to dotted stroke pattern.
-        if ((polyline.getPattern() == null) || (!polyline.getPattern().contains(DOT))) {
+        /*if ((polyline.getPattern() == null) || (!polyline.getPattern().contains(DOT))) {
             polyline.setPattern(PATTERN_POLYLINE_DOTTED);
         } else {
             // The default pattern is a solid stroke.
             polyline.setPattern(null);
-        }
+        }*/
 
-        Toast.makeText(this, "Route type " + polyline.getTag().toString(),
+        Toast.makeText(this, "" + polyline.getTag().toString(),
                 Toast.LENGTH_SHORT).show();
     }
 
@@ -228,7 +528,7 @@ public class PolyActivity extends AppCompatActivity
      * Listens for clicks on a polygon.
      * @param polygon The polygon object that the user has clicked.
      */
-    @Override
+    /*@Override
     public void onPolygonClick(Polygon polygon) {
         // Flip the values of the red, green, and blue components of the polygon's color.
         int color = polygon.getStrokeColor() ^ 0x00ffffff;
@@ -237,5 +537,6 @@ public class PolyActivity extends AppCompatActivity
         polygon.setFillColor(color);
 
         Toast.makeText(this, "Area type " + polygon.getTag().toString(), Toast.LENGTH_SHORT).show();
-    }
+    }*/
+
 }
